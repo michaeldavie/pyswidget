@@ -7,6 +7,7 @@ import ssdp
 RESPONSE_SEC = 2
 SWIDGET_ST = "urn:swidget:pico:1"
 
+
 class SwidgetProtocol(ssdp.SimpleServiceDiscoveryProtocol):
     """Protocol to handle responses and requests."""
 
@@ -20,11 +21,11 @@ class SwidgetProtocol(ssdp.SimpleServiceDiscoveryProtocol):
         self.insert_addresses.append((mac_address, ip_address))
 
 
-def discover_inserts():
-    # Start the asyncio loop.
+async def discover_inserts():
     loop = asyncio.get_event_loop()
-    connect = loop.create_datagram_endpoint(SwidgetProtocol, family=socket.AF_INET)
-    transport, protocol = loop.run_until_complete(connect)
+    transport, protocol = await loop.create_datagram_endpoint(
+        SwidgetProtocol, family=socket.AF_INET
+    )
 
     # Send out an M-SEARCH request, requesting Swidget service types.
     search_request = ssdp.SSDPRequest(
@@ -37,14 +38,7 @@ def discover_inserts():
         },
     )
     search_request.sendto(transport, (SwidgetProtocol.MULTICAST_ADDRESS, 1900))
-
-    # Keep running for response time seconds.
-    try:
-        loop.run_until_complete(asyncio.sleep(RESPONSE_SEC + 0.5))
-    except KeyboardInterrupt:
-        pass
-
+    await asyncio.sleep(RESPONSE_SEC + 0.5)
     transport.close()
-    loop.close()
 
     return protocol.insert_addresses

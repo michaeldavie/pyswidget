@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import asyncio
-from time import sleep
 
+import aiohttp
 from dotenv import dotenv_values
-import requests
 
 from discovery import discover_inserts
 
@@ -12,35 +11,41 @@ VERIFY_TLS = False
 
 
 class SwidgetInsert:
-    def __init__(self, addresses: tuple) -> None:
+    def __init__(self, session, addresses):
+        self.session = session
         self.mac_address, self.ip_address = addresses
 
-        self.session = requests.session()
-        self.session.headers = {"x-secret-key": SECRET_KEY}
-        self.session.verify = VERIFY_TLS
+    async def get_summary(self):
+        async with self.session.get(
+            url=f"https://{self.ip_address}/api/v1/summary", ssl=VERIFY_TLS
+        ) as response:
+            self.summary = await response.json()
 
-        self.summary = self.session.get(
-            url=f"https://{self.ip_address}/api/v1/summary"
-        ).json()
-        sleep(0.5)
-        self.update_state()
-
-    def update_state(self):
-        self.state = self.session.get(
-            url=f"https://{self.ip_address}/api/v1/state"
-        ).json()
+    async def get_state(self):
+        async with self.session.get(
+            url=f"https://{self.ip_address}/api/v1/state", ssl=VERIFY_TLS
+        ) as response:
+            self.state = await response.json()
 
 
 async def main():
-    if not VERIFY_TLS:
-        requests.packages.urllib3.disable_warnings()
-
+    inserts = []
     insert_addresses = await discover_inserts()
 
-    inserts = [SwidgetInsert(addresses=i) for i in insert_addresses]
+    headers = {"x-secret-key": SECRET_KEY}
+    connector = aiohttp.TCPConnector(force_close=True)
 
-    pass
+    async with aiohttp.ClientSession(headers=headers, connector=connector) as session:
+        inserts = [
+            SwidgetInsert(session=session, addresses=i) for i in insert_addresses
+        ]
+        for i in inserts:
+            await i.get_state()
+            await i.get_summary()
+
+        pass
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

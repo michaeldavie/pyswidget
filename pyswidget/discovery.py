@@ -7,7 +7,7 @@ import ssdp
 RESPONSE_SEC = 2
 SWIDGET_ST = "urn:swidget:pico:1"
 
-insert_addresses = set()
+device_addresses = set()
 
 
 class SwidgetProtocol(ssdp.SimpleServiceDiscoveryProtocol):
@@ -18,10 +18,10 @@ class SwidgetProtocol(ssdp.SimpleServiceDiscoveryProtocol):
         headers = {h[0]: h[1] for h in response.headers}
         mac_address = headers["USN"].split("-")[-1]
         ip_address = urlparse(headers["LOCATION"]).hostname
-        insert_addresses.add((mac_address, ip_address))
+        device_addresses.add((mac_address, ip_address))
 
 
-async def discover_inserts():
+async def discover_devices():
     loop = asyncio.get_event_loop()
     transport, protocol = await loop.create_datagram_endpoint(
         SwidgetProtocol, family=socket.AF_INET
@@ -40,4 +40,4 @@ async def discover_inserts():
     search_request.sendto(transport, (SwidgetProtocol.MULTICAST_ADDRESS, 1900))
     await asyncio.sleep(RESPONSE_SEC + 0.5)
 
-    return insert_addresses
+    return device_addresses

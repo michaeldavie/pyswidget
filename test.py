@@ -5,7 +5,7 @@ import json
 from dotenv import dotenv_values
 
 from pyswidget.devices import SwidgetDevice
-from pyswidget.discovery import discover_inserts
+from pyswidget.discovery import discover_devices
 
 ENV_VALUES = dotenv_values(".env")
 SECRET_KEY = ENV_VALUES["SECRET_KEY"]
@@ -16,15 +16,15 @@ inserts = []
 
 
 async def main():
-    #    insert_addresses = await discover_inserts()
-    insert_addresses = json.loads(ENV_VALUES["ADDRESSES"])
+    #    device_addresses = await discover_devices()
+    device_addresses = json.loads(ENV_VALUES["ADDRESSES"])
 
-    inserts = [
+    devices = [
         SwidgetDevice(addresses=i, secret_key=SECRET_KEY, ssl=VERIFY_TLS)
-        for i in insert_addresses
+        for i in device_addresses
     ]
 
-    for i in inserts:
+    for i in devices:
         await i.get_summary()
         await i.get_state()
 

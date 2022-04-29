@@ -1,20 +1,9 @@
 from aiohttp import ClientSession, TCPConnector
 
-ASSEMBLIES = ["host", "insert"]
-
 
 class SwidgetDevice:
     def __init__(self, addresses, secret_key, ssl):
         self.mac_address, self.ip_address = addresses
-        self.model = str()
-        self.version = str()
-        self.host_id = str()
-        self.host_type = str()
-        self.host_error = int()
-        self.insert_type = str()
-        self.rssi = int()
-        self.components = dict()
-
         self.ssl = ssl
         headers = {"x-secret-key": secret_key}
         connector = TCPConnector(force_close=True)
@@ -28,16 +17,10 @@ class SwidgetDevice:
 
         self.model = summary["model"]
         self.version = summary["version"]
-        self.host_id = summary["host"]["id"]
-        self.host_type = summary["host"]["type"]
-        self.host_error = summary["host"]["error"]
-        self.insert_type = summary["insert"]["type"]
-
-        for assembly in ASSEMBLIES:
-            self.components[assembly] = {
-                c["id"]: SwidgetComponent(c["functions"])
-                for c in summary[assembly]["components"]
-            }
+        self.assemblies = {
+            "host": HostAssembly(summary["host"]),
+            "insert": InsertAssembly(summary["insert"]),
+        }
 
     async def get_state(self):
         async with self.session.get(
@@ -45,18 +28,35 @@ class SwidgetDevice:
         ) as response:
             state = await response.json()
 
-        component_states = dict()
+        self.rssi = state["connection"]["rssi"]
 
-        for assembly in ASSEMBLIES:
-            component_states[assembly] = state[assembly]["components"]
-            for id, component in self.components[assembly].items():
-                component.update(component_states[assembly][id])
+        for assembly in self.assemblies:
+            for id, component in self.assemblies[assembly].components.items():
+                component.update(state[assembly]["components"][id])
 
     async def send_command(self, command):
         async with self.session.post(
             url=f"https://{self.ip_address}/api/v1/command", ssl=self.ssl, data={}
         ) as response:
             state = await response.json()
+
+
+class HostAssembly:
+    def __init__(self, summary):
+        self.id = summary["id"]
+        self.type = summary["type"]
+        self.error = summary["error"]
+        self.components = {
+            c["id"]: SwidgetComponent(c["functions"]) for c in summary["components"]
+        }
+
+
+class InsertAssembly:
+    def __init__(self, summary):
+        self.type = summary["type"]
+        self.components = {
+            c["id"]: SwidgetComponent(c["functions"]) for c in summary["components"]
+        }
 
 
 class ToggleComponent:

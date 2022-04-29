@@ -1,3 +1,5 @@
+import json
+
 from aiohttp import ClientSession, TCPConnector
 
 
@@ -34,9 +36,11 @@ class SwidgetDevice:
             for id, component in self.assemblies[assembly].components.items():
                 component.update(state[assembly]["components"][id])
 
-    async def send_command(self, command):
+    async def send_command(self, data):
         async with self.session.post(
-            url=f"https://{self.ip_address}/api/v1/command", ssl=self.ssl, data={}
+            url=f"https://{self.ip_address}/api/v1/command",
+            ssl=self.ssl,
+            data=json.dumps(data),
         ) as response:
             state = await response.json()
 
@@ -61,7 +65,7 @@ class InsertAssembly:
 
 class ToggleComponent:
     def __init__(self, state=None):
-        self.state = state
+        self._state = state
 
     @property
     def state(self):

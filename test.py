@@ -28,20 +28,22 @@ async def main():
         await d.get_summary()
         await d.get_state()
 
-    target = devices["500291a25ff0"]
+    target = devices[device_addresses[0][0]]
     if target.assemblies["host"].components["0"].functions["toggle"]["state"] == "on":
         await target.send_command(
             assembly="host", component="0", function="toggle", command={"state": "off"}
         )
+        print("Outlet toggled off")
     else:
         await target.send_command(
             assembly="host", component="0", function="toggle", command={"state": "on"}
         )
+        print("Outlet toggled on")
 
     pass
 
     for d in devices.values():
-        await d.session.close()
+        await d._session.close()
 
 
 if __name__ == "__main__":

@@ -9,10 +9,10 @@ class SwidgetDevice:
         self.ssl = ssl
         headers = {"x-secret-key": secret_key}
         connector = TCPConnector(force_close=True)
-        self.session = ClientSession(headers=headers, connector=connector)
+        self._session = ClientSession(headers=headers, connector=connector)
 
     async def get_summary(self):
-        async with self.session.get(
+        async with self._session.get(
             url=f"https://{self.ip_address}/api/v1/summary", ssl=self.ssl
         ) as response:
             summary = await response.json()
@@ -20,12 +20,12 @@ class SwidgetDevice:
         self.model = summary["model"]
         self.version = summary["version"]
         self.assemblies = {
-            "host": HostAssembly(summary["host"]),
-            "insert": InsertAssembly(summary["insert"]),
+            "host": SwidgetAssembly(summary["host"]),
+            "insert": SwidgetAssembly(summary["insert"]),
         }
 
     async def get_state(self):
-        async with self.session.get(
+        async with self._session.get(
             url=f"https://{self.ip_address}/api/v1/state", ssl=self.ssl
         ) as response:
             state = await response.json()
@@ -41,7 +41,7 @@ class SwidgetDevice:
     ):
         data = json.dumps({assembly: {"components": {component: {function: command}}}})
 
-        async with self.session.post(
+        async with self._session.post(
             url=f"https://{self.ip_address}/api/v1/command",
             ssl=self.ssl,
             data=data,
@@ -52,22 +52,14 @@ class SwidgetDevice:
         self.assemblies[assembly].components[component].functions[function] = function_value  # fmt: skip
 
 
-class HostAssembly:
-    def __init__(self, summary):
-        self.id = summary["id"]
-        self.type = summary["type"]
-        self.error = summary["error"]
-        self.components = {
-            c["id"]: SwidgetComponent(c["functions"]) for c in summary["components"]
-        }
-
-
-class InsertAssembly:
-    def __init__(self, summary):
+class SwidgetAssembly:
+    def __init__(self, summary: dict):
         self.type = summary["type"]
         self.components = {
             c["id"]: SwidgetComponent(c["functions"]) for c in summary["components"]
         }
+        self.id = summary.get("id")
+        self.error = summary.get("error")
 
 
 class SwidgetComponent:

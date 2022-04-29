@@ -34,15 +34,22 @@ class SwidgetDevice:
 
         for assembly in self.assemblies:
             for id, component in self.assemblies[assembly].components.items():
-                component.update(state[assembly]["components"][id])
+                component.functions = state[assembly]["components"][id]
 
-    async def send_command(self, data):
+    async def send_command(
+        self, assembly: str, component: str, function: str, command: dict
+    ):
+        data = json.dumps({assembly: {"components": {component: {function: command}}}})
+
         async with self.session.post(
             url=f"https://{self.ip_address}/api/v1/command",
             ssl=self.ssl,
-            data=json.dumps(data),
+            data=data,
         ) as response:
             state = await response.json()
+
+        function_value = state[assembly]["components"][component][function]
+        self.assemblies[assembly].components[component].functions[function] = function_value  # fmt: skip
 
 
 class HostAssembly:
@@ -63,44 +70,6 @@ class InsertAssembly:
         }
 
 
-class ToggleComponent:
-    def __init__(self, state=None):
-        self._state = state
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        if value not in ["ON", "OFF"]:
-            raise ValueError("Toggle state must be 'ON' or 'OFF'")
-        self._state = value
-
-
 class SwidgetComponent:
     def __init__(self, functions):
-        for f in functions:
-            if f == "toggle":
-                self.toggle = None
-            elif f == "power":
-                self.current = None
-                self.avg = None
-                self.avgOn = None
-            elif f == "temperature":
-                self.temperature = None
-            elif f == "humidity":
-                self.humidity = None
-
-    def update(self, state: dict):
-        for function, value in state.items():
-            if function == "toggle":
-                self.toggle = value["state"]
-            elif function == "power":
-                self.current = value["current"]
-                self.avg = value["avg"]
-                self.avgOn = value["avgOn"]
-            elif function == "temperature":
-                self.temperature = value["now"]
-            elif function == "humidity":
-                self.humidity = value["now"]
+        self.functions = {f: None for f in functions}

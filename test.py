@@ -12,9 +12,6 @@ SECRET_KEY = ENV_VALUES["SECRET_KEY"]
 
 VERIFY_TLS = False
 
-off_command = {"host": {"components": {"0": {"toggle": {"state": "off"}}}}}
-on_command = {"host": {"components": {"0": {"toggle": {"state": "on"}}}}}
-
 
 async def main():
     #    device_addresses = await discover_devices()
@@ -32,10 +29,14 @@ async def main():
         await d.get_state()
 
     target = devices["500291a25ff0"]
-    if target.assemblies["host"].components["0"].toggle == "on":
-        await target.send_command(data=off_command)
+    if target.assemblies["host"].components["0"].functions["toggle"]["state"] == "on":
+        await target.send_command(
+            assembly="host", component="0", function="toggle", command={"state": "off"}
+        )
     else:
-        await target.send_command(data=on_command)
+        await target.send_command(
+            assembly="host", component="0", function="toggle", command={"state": "on"}
+        )
 
     pass
 

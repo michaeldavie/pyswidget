@@ -1,5 +1,7 @@
 from aiohttp import ClientSession, TCPConnector
 
+ASSEMBLIES = ["host", "insert"]
+
 
 class SwidgetDevice:
     def __init__(self, addresses, secret_key, ssl):
@@ -31,18 +33,11 @@ class SwidgetDevice:
         self.host_error = summary["host"]["error"]
         self.insert_type = summary["insert"]["type"]
 
-        self.components.update(
-            {
+        for assembly in ASSEMBLIES:
+            self.components[assembly] = {
                 c["id"]: SwidgetComponent(c["functions"])
-                for c in summary["host"]["components"]
+                for c in summary[assembly]["components"]
             }
-        )
-        self.components.update(
-            {
-                c["id"]: SwidgetComponent(c["functions"])
-                for c in summary["insert"]["components"]
-            }
-        )
 
     async def get_state(self):
         async with self.session.get(
@@ -51,11 +46,32 @@ class SwidgetDevice:
             state = await response.json()
 
         component_states = dict()
-        component_states.update(state["host"]["components"])
-        component_states.update(state["insert"]["components"])
 
-        for id, component in self.components.items():
-            component.update(component_states[id])
+        for assembly in ASSEMBLIES:
+            component_states[assembly] = state[assembly]["components"]
+            for id, component in self.components[assembly].items():
+                component.update(component_states[assembly][id])
+
+    async def send_command(self, command):
+        async with self.session.post(
+            url=f"https://{self.ip_address}/api/v1/command", ssl=self.ssl, data={}
+        ) as response:
+            state = await response.json()
+
+
+class ToggleComponent:
+    def __init__(self, state=None):
+        self.state = state
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        if value not in ["ON", "OFF"]:
+            raise ValueError("Toggle state must be 'ON' or 'OFF'")
+        self._state = value
 
 
 class SwidgetComponent:

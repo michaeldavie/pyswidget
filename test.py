@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 import asyncio
+import json
 
 from dotenv import dotenv_values
 
-from devices import SwidgetDevice
-from discovery import discover_inserts
+from pyswidget.devices import SwidgetDevice
+from pyswidget.discovery import discover_inserts
 
-SECRET_KEY = dotenv_values(".env")["SECRET_KEY"]
+ENV_VALUES = dotenv_values(".env")
+SECRET_KEY = ENV_VALUES["SECRET_KEY"]
+
 VERIFY_TLS = False
 
 inserts = []
 
 
 async def main():
-    insert_addresses = await discover_inserts()
+    #    insert_addresses = await discover_inserts()
+    insert_addresses = json.loads(ENV_VALUES["ADDRESSES"])
 
     inserts = [
         SwidgetDevice(addresses=i, secret_key=SECRET_KEY, ssl=VERIFY_TLS)

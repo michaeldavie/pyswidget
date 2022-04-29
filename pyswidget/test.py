@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import asyncio
-import json
 
 from dotenv import dotenv_values
 
@@ -26,6 +25,7 @@ async def main():
         await i.get_state()
 
     pass
+
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()

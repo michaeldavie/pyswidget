@@ -1,3 +1,2 @@
-dotenv
 aiohttp
 ssdp

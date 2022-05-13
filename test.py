@@ -2,20 +2,18 @@
 import asyncio
 import json
 
-from dotenv import dotenv_values
 
-from pyswidget.devices import SwidgetDevice
+from pyswidget.device import SwidgetDevice
 from pyswidget.discovery import discover_devices
 
-ENV_VALUES = dotenv_values(".env")
-SECRET_KEY = ENV_VALUES["SECRET_KEY"]
+SECRET_KEY = "letmein23"
+device_addresses = [('24a16074ca14', '192.168.1.143')]
 
 VERIFY_TLS = False
 
 
 async def main():
     #    device_addresses = await discover_devices()
-    device_addresses = json.loads(ENV_VALUES["ADDRESSES"])
 
     devices = {
         device[0]: SwidgetDevice(
@@ -29,16 +27,23 @@ async def main():
         await d.get_state()
 
     target = devices[device_addresses[0][0]]
-    if target.assemblies["host"].components["0"].functions["toggle"]["state"] == "on":
-        await target.send_command(
-            assembly="host", component="0", function="toggle", command={"state": "off"}
-        )
-        print("Outlet toggled off")
-    else:
-        await target.send_command(
-            assembly="host", component="0", function="toggle", command={"state": "on"}
-        )
-        print("Outlet toggled on")
+    print(vars(target.assemblies['insert']))
+    print(target.hw_info())
+    print(target.features)
+    # print(target.__dict__)
+    # print(target.__dict__['assemblies']['host'].__dict__)
+    # print(target.__dict__['assemblies']['insert'].__dict__)
+    # print()
+    # if target.assemblies["host"].components["0"].functions["toggle"]["state"] == "on":
+    #     await target.send_command(
+    #         assembly="host", component="0", function="toggle", command={"state": "off"}
+    #     )
+    #     print("Outlet toggled off")
+    # else:
+    #     await target.send_command(
+    #         assembly="host", component="0", function="toggle", command={"state": "on"}
+    #     )
+    #     print("Outlet toggled on")
 
     pass
 

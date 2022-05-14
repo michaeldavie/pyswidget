@@ -1,7 +1,7 @@
 import requests
 import asyncio
 
-url = "https://192.168.1.143/api/v1/state"
+url = "https://192.168.1.134/api/v1/state"
 
 payload={}
 headers = {
@@ -12,26 +12,28 @@ response = requests.request("GET", url, headers=headers, data=payload, verify=Fa
 
 from pprint import pprint
 print("STATE")
+print(response.text)
 pprint(response.json())
 
-url = "https://192.168.1.143/api/v1/summary"
+url = "https://192.168.1.134/api/v1/summary"
 response = requests.request("GET", url, headers=headers, data=payload, verify=False)
-print("SUMMRY")
+print("SUMMARY")
 pprint(response.json())
 
 
 from device import SwidgetDevice
+from swidgetdimmer import SwidgetDimmer
 from swidgetoutlet import SwidgetOutlet
 async def main():
 
-  a = SwidgetOutlet('192.168.1.143', 'letmein23', False)
+  a = SwidgetDimmer('192.168.1.134', 'letmein23', False)
   print(a)
   await a.update()
-  await a.turn_off()
+  await a.turn_on()
   print(await(a.total_consumption()))
-  print(await(a.get_plug_comsumption(0)))
-  print(a.get_function_values('aq'))
-  print(a.get_sensor_value('aq', 'iaq'))
+  print(await(a.get_child_comsumption(0)))
+  await a.set_brightness(50)
+  await a.turn_off()
 
 
 if __name__ == "__main__":

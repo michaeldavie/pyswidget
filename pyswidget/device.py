@@ -85,6 +85,18 @@ class SwidgetDevice:
         ) as response:
             return await response.text
 
+    async def turn_on(self):
+        """Turn the device on."""
+        await self.send_command(
+            assembly="host", component="0", function="toggle", command={"state": "on"}
+        )
+
+    async def turn_off(self):
+        """Turn the device off."""
+        await self.send_command(
+            assembly="host", component="0", function="toggle", command={"state": "off"}
+        )
+
     @property
     def hw_info(self) -> Dict:
         """
@@ -100,6 +112,19 @@ class SwidgetDevice:
             "model": self.model
         }
 
+    async def get_child_comsumption(self, plug_id=0):
+        """Get the power consumption of a plug in watts."""
+        return self.assemblies['host'].components[str(plug_id)].functions['power']['current']
+
+    async def total_consumption(self):
+        """Get the total power consumption in watts."""
+        await self.get_state()
+        total_consumption = 0
+        for id, properties in self.assemblies['host'].components.items():
+            print(vars(properties))
+            total_consumption += properties.functions['power']['current']
+        return total_consumption
+
     @property
     def features(self) -> List[str]:
         """Return a set of features that the device supports."""
@@ -113,12 +138,18 @@ class SwidgetDevice:
         """Return the values of an insert function."""
         return_values = dict()
         for function, data in self.assemblies['insert'].components[function].functions.items():
-            return_values[function] = data['now']
+            if function == "motion":
+                return_values[function] = data['state']
+            else:
+                return_values[function] = data['now']
         return return_values
 
     def get_sensor_value(self, function, sensor):
         """Return the value of a sensor."""
-        return self.assemblies['insert'].components[function].functions[sensor]['now']
+        if sensor == "occupied":
+            return self.assemblies['insert'].components[function].functions['occupied']['state']
+        else:
+            return self.assemblies['insert'].components[function].functions[sensor]['now']
 
     @property
     def is_outlet(self) -> bool:

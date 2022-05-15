@@ -2,7 +2,7 @@ from importlib_metadata import version  # type: ignore
 
 from pyswidget.discovery import SwidgetProtocol
 from pyswidget.swidgetdimmer import SwidgetDimmer
-from pyswidget.device import DeviceType, SwidgetDevice
+from pyswidget.device import DeviceType, SwidgetDevice, SwidgetException
 from pyswidget.swidgetoutlet import SwidgetOutlet
 from pyswidget.swidgetswitch import SwidgetSwitch
 

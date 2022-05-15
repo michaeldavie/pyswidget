@@ -185,3 +185,7 @@ class SwidgetAssembly:
 class SwidgetComponent:
     def __init__(self, functions):
         self.functions = {f: None for f in functions}
+
+
+class SwidgetException(Exception):
+    """Base exception for device errors."""

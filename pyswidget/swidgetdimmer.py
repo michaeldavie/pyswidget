@@ -1,4 +1,4 @@
-from .device import (
+from pyswidget.device import (
     DeviceType,
     SwidgetDevice
 )

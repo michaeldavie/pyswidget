@@ -3,7 +3,7 @@ import logging
 import time
 
 from aiohttp import ClientSession, TCPConnector
-from enum import auto, Enum 
+from enum import auto, Enum
 from typing import Any, Dict, List
 
 

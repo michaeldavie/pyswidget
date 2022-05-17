@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyswidget"
-version = "0.0.2"
+version = "0.0.3"
 description = "Python API for TP-Link Kasa Smarthome devices"
 license = "GPL-3.0-or-later"
 authors = ["Your Name <you@example.com>"]
@@ -50,13 +50,13 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
-known_first_party = "kasa"
+known_first_party = "pyswidget"
 known_third_party = ["asyncclick", "pytest", "setuptools", "voluptuous"]
 
 [tool.coverage.run]
-source = ["kasa"]
+source = ["pyswidget"]
 branch = true
-omit = ["kasa/tests/*"]
+omit = ["pyswidget/tests/*"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -86,4 +86,3 @@ ignore = ["D001"]
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-

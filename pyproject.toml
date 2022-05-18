@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyswidget"
-version = "0.0.5"
+version = "0.0.6"
 description = "Python API for TP-Link Kasa Smarthome devices"
 license = "GPL-3.0-or-later"
 authors = ["Your Name <you@example.com>"]

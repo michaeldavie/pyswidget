@@ -15,7 +15,7 @@ python = "^3.7"
 anyio = "*"  # see https://github.com/python-trio/asyncclick/issues/18
 aiohttp = "*"
 importlib-metadata = "*"
-asyncclick = ">=8"
+# asyncclick = ">=8"
 pydantic = "^1"
 ssdp = "*"
 
@@ -51,7 +51,7 @@ force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
 known_first_party = "pyswidget"
-known_third_party = ["asyncclick", "pytest", "setuptools", "voluptuous"]
+known_third_party = ["aiohttp", "pytest", "setuptools", "voluptuous"]
 
 [tool.coverage.run]
 source = ["pyswidget"]
@@ -71,7 +71,7 @@ ignore-magic = true
 ignore-private = true
 ignore-semiprivate = true
 fail-under = 100
-exclude = ['kasa/tests/*']
+exclude = ['pyswidget/tests/*']
 verbose = 2
 
 [tool.pytest.ini_options]

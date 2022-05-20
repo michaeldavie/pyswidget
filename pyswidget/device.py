@@ -6,6 +6,7 @@ from aiohttp import ClientSession, TCPConnector
 from enum import auto, Enum
 from typing import Any, Dict, List
 
+from pyswidget.exceptions import SwidgetException
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,11 +80,14 @@ class SwidgetDevice:
         self.assemblies[assembly].components[component].functions[function] = function_value  # fmt: skip
 
     async def send_ping(self):
-        async with self._session.get(
-            url=f"https://{self.ip_address}/ping?x-secret-key={self.secret_key}",
-            ssl=self.ssl
-        ) as response:
-            return await response.text
+        try:
+            async with self._session.get(
+                url=f"https://{self.ip_address}/ping?x-secret-key={self.secret_key}",
+                ssl=self.ssl
+            ) as response:
+                return await response.text
+        except:
+            raise SwidgetException
 
     async def turn_on(self):
         """Turn the device on."""

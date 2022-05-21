@@ -80,7 +80,7 @@ class SwidgetDevice:
         self.assemblies[assembly].components[component].functions[function] = function_value  # fmt: skip
 
     @classmethod
-    async def send_ping(self):
+    async def ping(self):
         try:
             async with self._session.get(
                 url=f"https://{self.ip_address}/ping?x-secret-key={self.secret_key}",

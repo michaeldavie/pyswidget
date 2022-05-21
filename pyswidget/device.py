@@ -79,6 +79,7 @@ class SwidgetDevice:
         function_value = state[assembly]["components"][component][function]
         self.assemblies[assembly].components[component].functions[function] = function_value  # fmt: skip
 
+    @classmethod
     async def send_ping(self):
         try:
             async with self._session.get(
